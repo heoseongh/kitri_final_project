@@ -1,0 +1,24 @@
+# build
+FROM gradle:7.5.1-jdk11 as builder
+
+WORKDIR /workspace/app
+
+COPY . /workspace/app/
+
+RUN ./gradlew bootJar -p ${MODULE}
+
+# runtime
+FROM openjdk:11-jre-slim
+
+# 보안조치
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+WORKDIR /workspace/app
+
+COPY --from=builder /workspace/app/${MODULE}/build/libs/${MODULE}.jar .
+
+EXPOSE 8080
+
+USER appuser
+
+ENTRYPOINT ["java", "-jar", "${MODULE}.jar"]
