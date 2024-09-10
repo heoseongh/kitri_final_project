@@ -2,7 +2,8 @@ name: Membership Service - DEV
 
 env:
   MODULE: membership-service
-  
+  BUILD_ID: ${{ github.sha }}
+  HELM_VALUE: membership-service-chart/values-dev.yaml
 on:
   push:
     branches: [ "devops2" ]
@@ -29,7 +30,7 @@ jobs:
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         REPOSITORY: membership-service-devops
-        IMAGE_TAG: ${{ github.sha }}
+        IMAGE_TAG: ${{ env.BUILD_ID }}
       run: |
         envsubst < Dockerfile.template | docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -f - .
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
@@ -41,3 +42,19 @@ jobs:
         path: helm-chart
         ref: main
         ssh-key: ${{ secrets.HELM_CHART_REPO_KEY }}
+
+    - name: Change Image tag of the Helm value
+      uses: mikefarah/yq@v4.34.1
+      with:
+        cmd: yq -i '.image.tag = "${{ env.BUILD_ID }}"' helm-chart/${{ env.HELM_VALUE }}
+
+    - name: Commit and Push HELM changes
+      run: |
+        cd helm-chart
+        git config --local user.email "githubaction@gmail.com"
+        git config --local user.name "GitHubAction"
+        git add .
+        git commit -m "Commit HELM changes: ${{ env.ECR_REPOSITORY }}:${{ env.BUILD_ID }}"
+        current_branch=$(git branch --show-current)
+        git checkotu -b ${{ env.HELM_BRANCH }} && git merge ${current_branch}
+        git push --force origin ${{ env.HELM_BRANCH }}
