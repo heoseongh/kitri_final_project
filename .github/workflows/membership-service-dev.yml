@@ -40,3 +40,4 @@ jobs:
         reposiroty: heoseongh/kitri_final_helm
         path: helm-chart
         ref: main
+        ssh-key: ${{ secrets.HELM_CHART_REPO_KEY }}
