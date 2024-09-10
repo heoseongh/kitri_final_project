@@ -37,7 +37,7 @@ jobs:
     - name: Checkout Helm Repository
       uses: actions/checkout@v4
       with:
-        reposiroty: heoseongh/kitri_final_helm
+        repository: heoseongh/kitri_final_helm
         path: helm-chart
         ref: main
         ssh-key: ${{ secrets.HELM_CHART_REPO_KEY }}
