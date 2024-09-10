@@ -4,6 +4,8 @@ env:
   MODULE: membership-service
   BUILD_ID: ${{ github.sha }}
   HELM_VALUE: membership-service-chart/values-dev.yaml
+  HELM_BRANCH: dev
+
 on:
   push:
     branches: [ "devops2" ]
@@ -56,5 +58,5 @@ jobs:
         git add .
         git commit -m "Commit HELM changes: ${{ env.ECR_REPOSITORY }}:${{ env.BUILD_ID }}"
         current_branch=$(git branch --show-current)
-        git checkotu -b ${{ env.HELM_BRANCH }} && git merge ${current_branch}
+        git checkout -b ${{ env.HELM_BRANCH }} && git merge ${current_branch}
         git push --force origin ${{ env.HELM_BRANCH }}
